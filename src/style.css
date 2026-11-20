@@ -91,17 +91,33 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: #9a84e9; curso
 .number-control { display: flex; align-items: center; gap: 8px; padding: 0 11px; height: 46px; border: 1px solid #e9e9f2; border-radius: 11px; color: #8b91a4; font-size: 12px; white-space: nowrap; }
 .number-control input { width: 45px; border: 0; outline: 0; color: #40365d; font-weight: 700; text-align: center; }
 .results-heading { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin: 37px 0 20px; }
+.results-actions, .page-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; }
+.page-controls span { color: #777f96; font-size: 12px; white-space: nowrap; }
+.page-controls .button { min-height: 38px; padding: 0 12px; }
 .group-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
-.group-card { min-height: 160px; padding: 19px; border: 1px solid #ececf4; border-radius: 15px; background: #fff; animation: appear .5s both; animation-delay: calc(var(--card-index) * 55ms); }
+.group-card { min-width: 0; min-height: 160px; padding: 19px; border: 1px solid #ececf4; border-radius: 15px; background: #fff; animation: appear .5s both; animation-delay: calc(var(--card-index) * 55ms); }
 .group-card:nth-child(4n+2) .group-number { background: #fff0e8; color: #da9676; }
 .group-card:nth-child(4n+3) .group-number { background: #eaf8f3; color: #68ac98; }
 .group-card:nth-child(4n+4) .group-number { background: #fff6db; color: #cda753; }
-.group-card-top { display: flex; justify-content: space-between; align-items: center; }
+.group-card-top { display: flex; align-items: center; gap: 8px; }
 .group-number { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 11px; background: #f1edff; color: #8c76d7; font-size: 12px; font-weight: 800; }
-.member-count { color: #a5aabb; font-size: 11px; }
-.group-card h3 { margin: 16px 0 12px; font-size: 15px; }
+.member-count { margin-left: auto; color: #a5aabb; font-size: 11px; white-space: nowrap; }
+.group-card h3 { margin: 0; font-size: 15px; }
 .member-list, .winner-members { display: flex; flex-wrap: wrap; gap: 7px; }
-.member-list span, .winner-members span { padding: 5px 9px; border-radius: 7px; background: #f7f7fb; color: #747b91; font-size: 12px; }
+.member-list { margin-top: 12px; }
+.member-list span, .winner-members span { padding: 5px 9px; border-radius: 7px; background: #f7f7fb; color: #555f76; font-size: 12px; overflow-wrap: anywhere; }
+#group-display:fullscreen { display: flex; width: 100%; height: 100%; flex-direction: column; padding: 12px 18px; overflow: auto; background: #f7f8fc; }
+#group-display:fullscreen .results-heading { flex: none; margin: 0 0 10px; }
+#group-display:fullscreen .section-label { display: none; }
+#group-display:fullscreen .results-heading h2 { font-size: clamp(16px, 2.2vh, 24px); }
+#group-display:fullscreen .group-grid { flex: 1 0 auto; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: repeat(var(--group-rows), minmax(min-content, 1fr)); gap: clamp(5px, .9vh, 10px); }
+#group-display:fullscreen .group-card { min-height: 0; padding: clamp(5px, .8vh, 10px); border-radius: 10px; animation: none; }
+#group-display:fullscreen .group-card-top { gap: 6px; }
+#group-display:fullscreen .group-number { width: clamp(20px, 2.5vh, 28px); height: clamp(20px, 2.5vh, 28px); border-radius: 7px; font-size: 11px; }
+#group-display:fullscreen .group-card h3 { font-size: clamp(12px, 1.6vh, 17px); }
+#group-display:fullscreen .member-count { font-size: clamp(10px, 1.2vh, 13px); }
+#group-display:fullscreen .member-list { flex-direction: column; align-items: flex-start; gap: 0; margin-top: 4px; }
+#group-display:fullscreen .member-list span { max-width: 100%; padding: 0; background: none; font-size: clamp(12px, 1.7vh, 19px); line-height: 1.35; }
 .reveal-stage { display: flex; min-height: 340px; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
 .reveal-stage h2 { margin: 25px 0 8px; font-size: 20px; }
 .reveal-stage p { color: #9aa0b1; font-size: 13px; }

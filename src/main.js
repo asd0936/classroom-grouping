@@ -1,5 +1,5 @@
 import './style.css';
-import { chooseGroup, createGroups } from './core.js';
+import { chooseGroup, createGroups, formatStudentLabel, paginateGroups } from './core.js';
 import { parseRoster } from './import.js';
 
 const STORAGE_KEY = 'classroom-grouping-v1';
@@ -8,6 +8,7 @@ const emptyState = () => ({ students: [], groups: [], drawn: [] });
 let state = emptyState();
 let activeTab = 'roster';
 let groupSize = '5';
+let groupPage = 0;
 let busy = false;
 let notice = '';
 let noticeType = 'info';
@@ -54,9 +55,7 @@ function setNotice(message, type = 'info') {
 }
 
 function memberLabel(index) {
-  const student = state.students[index];
-  const sameName = state.students.filter(other => other.name === student.name).length > 1;
-  return sameName ? `${student.name}（${student.id || `名单序号 ${index + 1}`}）` : student.name;
+  return formatStudentLabel(state.students, index);
 }
 
 function icon(name) {
@@ -107,13 +106,35 @@ function rosterView() {
     </div>`;
 }
 
-function groupCards(groups) {
-  return `<div class="group-grid">${groups.map((group, index) => `
+function groupCards(groups, start) {
+  const rows = Math.max(1, Math.ceil(groups.length / 5));
+  return `<div class="group-grid" style="--group-rows:${rows}">${groups.map((group, index) => `
     <article class="group-card" style="--card-index:${Math.min(index, 12)}">
-      <div class="group-card-top"><span class="group-number">${String(index + 1).padStart(2, '0')}</span><span class="member-count">${group.length} 人</span></div>
-      <h3>第 ${index + 1} 组</h3>
+      <div class="group-card-top"><span class="group-number">${String(start + index + 1).padStart(2, '0')}</span><h3>第 ${start + index + 1} 组</h3><span class="member-count">${group.length} 人</span></div>
       <div class="member-list">${group.map(member => `<span>${escapeHtml(memberLabel(member))}</span>`).join('')}</div>
     </article>`).join('')}</div>`;
+}
+
+function groupDisplayContents() {
+  const page = paginateGroups(state.groups, groupPage);
+  const isFullscreen = document.fullscreenElement?.id === 'group-display';
+  return `<div class="results-heading">
+      <div><span class="section-label">THE TEAMS ARE READY</span><h2>今天的分组揭晓！</h2></div>
+      <div class="results-actions">
+        <div class="page-controls" aria-label="分组结果翻页">
+          <button class="button secondary" data-action="previous-groups" ${page.page === 0 ? 'disabled' : ''}>上一页</button>
+          <span aria-live="polite">第 ${page.page + 1} / ${page.pageCount} 页 · 共 ${state.groups.length} 组</span>
+          <button class="button secondary" data-action="next-groups" ${page.page + 1 >= page.pageCount ? 'disabled' : ''}>下一页</button>
+        </div>
+        <button class="button secondary fullscreen-button" data-action="fullscreen">${isFullscreen ? '退出全屏' : '全屏展示'}</button>
+        ${isFullscreen ? '' : `<button class="button secondary" data-action="go-draw">去抽取小组 ${icon('arrow')}</button>`}
+      </div>
+    </div>${groupCards(page.groups, page.start)}`;
+}
+
+function updateGroupDisplay() {
+  const display = document.querySelector('#group-display');
+  if (display) display.innerHTML = groupDisplayContents();
 }
 
 function groupsView() {
@@ -125,7 +146,7 @@ function groupsView() {
       <button class="button primary" data-action="make-groups" ${busy || !present ? 'disabled' : ''}>${icon('spark')} ${state.groups.length ? '重新随机分组' : '开始随机分组'}</button></div>
     </section>
     ${busy ? `<div class="reveal-stage"><div class="orbit"><span>✦</span></div><h2>正在寻找最佳搭子…</h2><p>缘分正在悄悄排列，请稍等</p></div>` :
-      state.groups.length ? `<div class="results-heading"><div><span class="section-label">THE TEAMS ARE READY</span><h2>今天的分组揭晓！</h2></div><button class="button secondary" data-action="go-draw">去抽取小组 ${icon('arrow')}</button></div>${groupCards(state.groups)}` :
+      state.groups.length ? `<section id="group-display" aria-label="分组结果">${groupDisplayContents()}</section>` :
       `<div class="empty-state large"><span class="empty-symbol">✳</span><strong>精彩的组合即将诞生</strong><p>${present ? '设置人数，点击上方按钮开始分组' : '请先导入名单并确认出勤情况'}</p></div>`}`;
 }
 
@@ -162,7 +183,7 @@ function render() {
     <footer>MADE FOR LITTLE MOMENTS OF CONNECTION <span>✦</span></footer></main></div>`;
 }
 
-app.addEventListener('click', event => {
+app.addEventListener('click', async event => {
   const button = event.target.closest('button');
   if (!button || button.disabled) return;
   if (button.dataset.tab) {
@@ -185,6 +206,7 @@ app.addEventListener('click', event => {
       try {
         localStorage.removeItem(STORAGE_KEY);
         state = emptyState();
+        groupPage = 0;
         activeTab = 'roster';
         setNotice('本机数据已清除。', 'success');
       } catch (error) {
@@ -196,6 +218,7 @@ app.addEventListener('click', event => {
       try {
         const groups = createGroups(state.students, Number(groupSize));
         if (!save({ ...state, groups, drawn: [] })) break;
+        groupPage = 0;
         setNotice('');
         busy = true;
         render();
@@ -204,6 +227,29 @@ app.addEventListener('click', event => {
         setNotice(error.message, 'error');
       }
       break;
+    }
+    case 'previous-groups':
+    case 'next-groups':
+      groupPage += button.dataset.action === 'next-groups' ? 1 : -1;
+      groupPage = paginateGroups(state.groups, groupPage).page;
+      updateGroupDisplay();
+      return;
+    case 'fullscreen': {
+      const display = document.querySelector('#group-display');
+      try {
+        if (document.fullscreenElement === display) {
+          await document.exitFullscreen();
+        } else if (display?.requestFullscreen) {
+          await display.requestFullscreen();
+        } else {
+          throw new Error('当前浏览器不支持网页全屏');
+        }
+      } catch (error) {
+        setNotice(`无法切换全屏：${error.message}。请检查浏览器全屏权限。`, 'error');
+        if (document.fullscreenElement) alert(notice);
+        else render();
+      }
+      return;
     }
     case 'draw':
       if (!state.groups.length || state.drawn.length >= state.groups.length) return;
@@ -246,6 +292,7 @@ app.addEventListener('change', async event => {
       if (file.size > 10 * 1024 * 1024) throw new Error('名单文件不能超过 10 MB');
       const students = parseRoster(await file.arrayBuffer());
       if (save({ students, groups: [], drawn: [] })) {
+        groupPage = 0;
         setNotice(`成功导入 ${students.length} 位同学。请确认今天的出勤情况。`, 'success');
       }
     } catch (error) {
@@ -260,9 +307,14 @@ app.addEventListener('change', async event => {
       return;
     }
     const students = state.students.map((student, i) => i === index ? { ...student, absent: target.checked } : student);
-    if (save({ students, groups: [], drawn: [] })) setNotice('');
+    if (save({ students, groups: [], drawn: [] })) {
+      groupPage = 0;
+      setNotice('');
+    }
     render();
   }
 });
+
+document.addEventListener('fullscreenchange', updateGroupDisplay);
 
 render();

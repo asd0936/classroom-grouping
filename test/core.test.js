@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { chooseGroup, createGroups, studentsFromRows } from '../src/core.js';
+import { chooseGroup, createGroups, formatStudentLabel, paginateGroups, studentsFromRows } from '../src/core.js';
 
 test('分组人数均衡，不超过上限，且请假同学不参与', () => {
   const students = Array.from({ length: 22 }, (_, i) => ({ name: `${i}`, absent: i === 3 }));
@@ -19,6 +19,20 @@ test('抽组排除已抽组，抽完后明确报错', () => {
   const groups = [[0], [1], [2]];
   assert.equal(chooseGroup(groups, [0, 2], () => 0), 1);
   assert.throws(() => chooseGroup(groups, [0, 1, 2]), /都已经抽过/);
+});
+
+test('每页最多 30 组，最后一页保留原始编号偏移', () => {
+  const groups = Array.from({ length: 61 }, (_, index) => [index]);
+  assert.deepEqual(paginateGroups(groups, 0), { groups: groups.slice(0, 30), start: 0, page: 0, pageCount: 3 });
+  assert.deepEqual(paginateGroups(groups, 1), { groups: groups.slice(30, 60), start: 30, page: 1, pageCount: 3 });
+  assert.deepEqual(paginateGroups(groups, 5), { groups: groups.slice(60), start: 60, page: 2, pageCount: 3 });
+});
+
+test('姓名后显示学号，没有学号的同名同学显示名单序号', () => {
+  const students = [{ name: '小明', id: 'A01' }, { name: '小明', id: '' }, { name: '小红', id: '' }];
+  assert.equal(formatStudentLabel(students, 0), '小明（A01）');
+  assert.equal(formatStudentLabel(students, 1), '小明（名单序号 2）');
+  assert.equal(formatStudentLabel(students, 2), '小红');
 });
 
 test('从包含说明行的表格中识别姓名及文本学号', () => {

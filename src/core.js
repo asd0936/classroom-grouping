@@ -44,6 +44,20 @@ export function chooseGroup(groups, drawn, random = randomInt) {
   return remaining[random(remaining.length)];
 }
 
+export function paginateGroups(groups, page) {
+  const pageCount = Math.max(1, Math.ceil(groups.length / 30));
+  const currentPage = Math.max(0, Math.min(page, pageCount - 1));
+  const start = currentPage * 30;
+  return { groups: groups.slice(start, start + 30), start, page: currentPage, pageCount };
+}
+
+export function formatStudentLabel(students, index) {
+  const student = students[index];
+  if (student.id) return `${student.name}（${student.id}）`;
+  const sameName = students.some((other, otherIndex) => otherIndex !== index && other.name === student.name);
+  return sameName ? `${student.name}（名单序号 ${index + 1}）` : student.name;
+}
+
 const normalize = value => String(value ?? '').normalize('NFKC').trim().replace(/\s+/g, '');
 
 export function studentsFromRows(sheets) {
