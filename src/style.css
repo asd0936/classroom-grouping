@@ -138,13 +138,21 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: #9a84e9; curso
 .history-panel { min-height: 490px; display: flex; flex-direction: column; }
 .history-panel .empty-state { flex: 1; }
 .history-list { max-height: 340px; margin: 23px 0; padding: 0; list-style: none; overflow-y: auto; }
-.history-list li { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid #f0f1f6; }
+.history-list li { border-bottom: 1px solid #f0f1f6; }
+.history-list summary { display: flex; align-items: center; gap: 10px; padding: 12px 0; list-style: none; cursor: pointer; }
+.history-list summary::-webkit-details-marker { display: none; }
+.history-list summary:focus-visible { outline: 3px solid #9a8bff; outline-offset: -3px; border-radius: 8px; }
+.history-list summary:hover .history-toggle { color: #6751bf; }
 .history-index { display: grid; width: 32px; height: 32px; flex: none; place-items: center; border-radius: 10px; background: #f1edff; color: #907bd8; font-size: 11px; font-weight: 700; }
-.history-list li > span:nth-child(2) { flex: 1; min-width: 0; }
+.history-summary { flex: 1; min-width: 0; }
 .history-list strong, .history-list small { display: block; }
 .history-list strong { font-size: 13px; }
 .history-list small { overflow: hidden; margin-top: 4px; color: #a1a6b5; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.history-check { color: #8fc7ad; }
+.history-toggle { flex: none; color: #8975cf; font-size: 11px; white-space: nowrap; }
+.history-toggle span:last-child, details[open] .history-toggle span:first-child { display: none; }
+details[open] .history-toggle span:last-child { display: inline; }
+.history-members { display: flex; flex-wrap: wrap; gap: 7px; padding: 0 0 13px 42px; }
+.history-members span { padding: 5px 9px; border-radius: 7px; background: #f1edff; color: #55458d; font-size: 12px; overflow-wrap: anywhere; }
 .history-note { margin-top: auto; padding: 12px; border-radius: 10px; background: #f7f7fb; color: #9a9fb0; font-size: 11px; line-height: 1.7; }
 .notice { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; padding: 12px 15px; border-radius: 10px; background: #edf4ff; color: #536c9c; font-size: 13px; line-height: 1.6; }
 .notice.success { background: #edf9f2; color: #4a8a67; }

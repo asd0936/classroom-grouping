@@ -161,8 +161,8 @@ function drawView() {
         `<div class="draw-orb">?</div><h2>谁将闪亮登场？</h2><p>点击按钮，揭晓下一组幸运同学</p>`}
       <button class="button primary draw-button" data-action="draw" ${busy || !remaining ? 'disabled' : ''}>${icon('spark')} ${remaining ? (last === undefined ? '开始抽取' : '抽取下一组') : (state.groups.length ? '所有小组已抽完' : '请先分组')}</button>
     </div><aside class="panel history-panel"><div class="section-top"><div><span class="section-label">TODAY’S MOMENTS</span><h2>抽取记录</h2></div><span class="small-badge">${state.drawn.length} / ${state.groups.length}</span></div>
-      ${state.drawn.length ? `<ol class="history-list">${state.drawn.map((group, index) => `<li><span class="history-index">${String(index + 1).padStart(2, '0')}</span><span><strong>第 ${group + 1} 组</strong><small>${state.groups[group].map(member => escapeHtml(memberLabel(member))).join('、')}</small></span><span class="history-check">✓</span></li>`).join('')}</ol>` : `<div class="empty-state"><span class="empty-symbol">✧</span><strong>惊喜还在路上</strong><p>抽中的小组会记录在这里</p></div>`}
-      <div class="history-note">已抽中的小组不会再次参与本节课的抽取。</div>
+      ${state.drawn.length ? `<ol class="history-list">${state.drawn.map((group, index) => `<li><details><summary><span class="history-index">${String(index + 1).padStart(2, '0')}</span><span class="history-summary"><strong>第 ${group + 1} 组</strong><small>${state.groups[group].map(member => escapeHtml(memberLabel(member))).join('、')}</small></span><span class="history-toggle"><span>查看详情</span><span>收起</span></span></summary><div class="history-members">${state.groups[group].map(member => `<span>${escapeHtml(memberLabel(member))}</span>`).join('')}</div></details></li>`).join('')}</ol>` : `<div class="empty-state"><span class="empty-symbol">✧</span><strong>惊喜还在路上</strong><p>抽中的小组会记录在这里</p></div>`}
+      <div class="history-note">点击记录查看成员详情。已抽中的小组不会再次参与本节课的抽取。</div>
     </aside></section>`;
 }
 
